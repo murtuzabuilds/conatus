@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conatus · become who you are meant to be</title>
+<meta name="description" content="An AI personal growth companion that turns intention into a chain of purpose, milestones, weekly actions and one daily habit.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="#" id="home"><svg viewBox="0 0 40 40" width="28" height="28" aria-hidden="true"><g fill="none" stroke-width="5" stroke-linecap="butt"><path d="M33 12 A15 15 0 0 0 11 8" stroke="#F44E14"/><path d="M9 10 A15 15 0 0 0 5 22" stroke="#FAFBF8" opacity=".85"/><path d="M5 25 A15 15 0 0 0 12 34" stroke="#FAFBF8" opacity=".65"/><path d="M15 35.5 A15 15 0 0 0 27 35" stroke="#FAFBF8" opacity=".45"/><path d="M30 33 A15 15 0 0 0 34 28" stroke="#FAFBF8" opacity=".3"/></g></svg><b>conatus</b></a>
+  <button type="button" class="ghost" id="reset" hidden>Start over</button>
+</header>
+
+<main>
+  <section class="onboard" id="onboard">
+    <p class="kicker">AI-powered personal growth</p>
+    <h1>Become the professional<br>you are <em>meant to be.</em></h1>
+    <form id="form" class="ask">
+      <label for="goal">What do you want to become?</label>
+      <input id="goal" required placeholder="I want to become an AI product manager in 6 months" autocomplete="off">
+      <label for="why">Why does it matter to you? <span>(optional, but it's the purpose pillar)</span></label>
+      <input id="why" placeholder="Because I want to build what I used to only design" autocomplete="off">
+      <div class="examples" id="examples">
+        <button type="button">Become an AI product manager by May</button>
+        <button type="button">Run a 10k in 8 weeks</button>
+        <button type="button">Learn SQL properly in 2 months</button>
+        <button type="button">Write a short book this year</button>
+      </div>
+      <div class="row"><button class="cta">Build my chain →</button><button type="button" class="ghost" id="demo">See it with 12 days of history</button></div>
+      <p class="err" id="err" role="alert"></p>
+    </form>
+  </section>
+
+  <section class="dash" id="dash" hidden>
+    <div class="goalbar">
+      <div><p class="kicker" id="domain"></p><h2 id="goalT"></h2><p class="purpose" id="purpose"></p></div>
+      <div class="left"><b id="daysLeft"></b><span>days left</span></div>
+    </div>
+
+    <div class="grid">
+      <article class="card today">
+        <p class="kicker">Today's keystone</p>
+        <h3 id="habit"></h3>
+        <button type="button" class="check" id="check"><span class="ring"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52" class="track"/><circle cx="60" cy="60" r="52" class="fill" id="ringFill"/></svg><b id="streak">0</b><small>day streak</small></span><span class="lbl" id="checkLbl">Check in</span></button>
+      </article>
+
+      <article class="card coach" id="coach"><p class="kicker">Coach</p><p id="nudge"></p></article>
+
+      <article class="card chain">
+        <p class="kicker">Five pillars</p>
+        <ol class="pillars" id="pillars"></ol>
+      </article>
+
+      <article class="card ms">
+        <p class="kicker">Milestones</p>
+        <ol class="milestones" id="milestones"></ol>
+      </article>
+
+      <article class="card wk">
+        <p class="kicker">This week</p>
+        <ul class="weekly" id="weekly"></ul>
+      </article>
+    </div>
+  </section>
+</main>
+<footer class="foot">Everything stays in your browser. Brand and product concept by <a href="https://murtuzabuilds.com">Murtuza Mohammed</a>.</footer>
+<script type="module" src="app.js"></script>
+</body>
+</html>
