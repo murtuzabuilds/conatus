@@ -63,8 +63,10 @@ On the first screen, "See it with 12 days of history" loads a realistic demo, in
 
 ## Brand
 
-Vivid Orange `#F44E14` on near-black `#171717`, off-white `#FAFBF8`, set in Sora. The logomark is a C made of five arcs, one per pillar, fading as the chain extends.
+The app uses the Conatus identity from the brand case study: **Vivid Orange** `#F44E14`, **Charcoal Black** `#171717`, **Warm Off-White** `#FAFAF8`, **Light Grey** `#C7C7C7` and **Medium Grey** `#707070`, set in **Sora**. The logomark is rebuilt as an SVG from its construction grid: a C formed by two arcs around a central diamond, with the forward bar and two diamonds reaching left, momentum out of a steady core. The first screen cycles the campaign lines: *Keep moving. Keep becoming.* · *Every choice. A stronger you.* · *Quiet mind. Clear direction.*
+
+![Conatus onboarding](docs/onboarding.png)
 
 ---
 
-Brand, product concept and code by [Murtuza Mohammed](https://murtuzabuilds.com). MIT licensed.
+Brand, product concept and code by [Murtuza](https://murtuzabuilds.com). MIT licensed.

@@ -52,3 +52,7 @@ $('weekly').addEventListener('change', e => { const k = weekKey(today()), id = e
 $('reset').addEventListener('click', () => { S = null; save(null); render(); });
 $('home').addEventListener('click', e => e.preventDefault());
 render();
+
+/* campaign lines from the brand, cycling on the first screen */
+const MANTRAS = ['Keep moving. Keep becoming.', 'Every choice. A stronger you.', 'Quiet mind. Clear direction.', 'Progress begins from within.'];
+let mi = 0; setInterval(() => { const el = document.getElementById('mantra'); if (!el || document.getElementById('onboard').hidden) return; mi = (mi + 1) % MANTRAS.length; el.textContent = MANTRAS[mi]; el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; }, 4000);
