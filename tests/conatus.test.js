@@ -1,8 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { plan, parseHorizon, detectDomain } from '../src/planner.js';
+import { plan, parseHorizon, detectDomain, reading } from '../src/planner.js';
 import { streak, consistency, pillars, weekKey } from '../src/tracker.js';
-import { nudge } from '../src/coach.js';
+import { nudge, RULES } from '../src/coach.js';
 
 const today = new Date('2026-09-28T12:00:00Z');
 const days = (end, n) => Array.from({ length: n }, (_, i) => new Date(new Date(end + 'T12:00:00Z') - i * 864e5).toISOString().slice(0, 10));
@@ -51,4 +51,33 @@ test('coach: restart small after a gap, celebrate at the end', () => {
   assert.equal(nudge(p, { checkins: [] }, '2026-09-02').tone, 'start');
   p.milestones.forEach(m => (m.done = true));
   assert.equal(nudge(p, { checkins: [] }, '2026-09-28').tone, 'celebrate');
+});
+
+test('reading: the planner shows which words it acted on', () => {
+  const r = reading('I want to become an AI product manager in 6 months', today);
+  assert.equal(r.phrase, 'in 6 months'); assert.equal(r.days, 183); assert.equal(r.domain, 'career');
+  assert.ok(r.matched.includes('product manager'));
+  assert.equal(reading('Become a PM by May', today).phrase, 'by may');
+  assert.equal(reading('Write a short book this year', today).phrase, 'this year');
+  const d = reading('be kinder', today);
+  assert.equal(d.phrase, null); assert.equal(d.days, 90); assert.deepEqual(d.matched, []);
+  for (const t of ['run a 10k in 8 weeks', 'learn SQL by March 2027', 'be kinder'])
+    assert.equal(reading(t, today).days, plan(t, { today }).days);
+});
+
+test('coach: every message names its rule and gives its reason', () => {
+  const p = plan('run a 10k in 8 weeks', { today: new Date('2026-09-01T12:00:00Z') });
+  const gap = nudge(p, { checkins: ['2026-09-20', '2026-09-19'] }, '2026-09-28');
+  assert.equal(gap.rule, 'gap'); assert.match(gap.why, /0 of the last 7 days/);
+  assert.equal(nudge(p, { checkins: [] }, '2026-09-02').rule, 'today');
+  assert.equal(nudge(p, { checkins: ['2026-09-02'] }, '2026-09-02').rule, 'steady');
+  assert.equal(nudge(p, { checkins: [] }, '2026-09-13').rule, 'due-soon');
+  assert.equal(nudge(p, { checkins: [] }, '2026-09-17').rule, 'overdue');
+  assert.equal(nudge(p, { checkins: days('2026-09-08', 7) }, '2026-09-08').rule, 'streak');
+  const late = plan('get better at sleep', { today: new Date('2026-06-01T12:00:00Z') });
+  const behind = nudge(late, { checkins: ['2026-06-16'] }, '2026-06-16');
+  assert.equal(behind.rule, 'behind'); assert.match(behind.why, /0 of 4 milestones done with 17% of the time used: 17 points behind/);
+  p.milestones.forEach(m => (m.done = true));
+  assert.equal(nudge(p, { checkins: [] }, '2026-09-28').rule, 'complete');
+  for (const n of [gap, behind]) { assert.ok(RULES.includes(n.rule)); assert.ok(n.why.length > 10 && n.text.length > 10); }
 });

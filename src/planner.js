@@ -4,23 +4,26 @@
 
 const DAY = 86400000;
 const MONTHS = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+const RELATIVE = /in (\d+|a|one|two|three|six|twelve) (day|week|month|year)s?/;
+const BY_MONTH = new RegExp(`by (${MONTHS.join('|')})(?: (\\d{4}))?`);
+const THIS_YEAR = /this year|end of (the )?year/;
 
 export function parseHorizon(text, today = new Date()) {
   const t = text.toLowerCase();
   let m;
-  if ((m = t.match(/in (\d+|a|one|two|three|six|twelve) (day|week|month|year)s?/))) {
+  if ((m = t.match(RELATIVE))) {
     const words = { a: 1, one: 1, two: 2, three: 3, six: 6, twelve: 12 };
     const n = words[m[1]] ?? +m[1], unit = { day: 1, week: 7, month: 30.44, year: 365.25 }[m[2]];
     return Math.max(14, Math.round(n * unit));
   }
-  if ((m = t.match(new RegExp(`by (${MONTHS.join('|')})(?: (\\d{4}))?`)))) {
+  if ((m = t.match(BY_MONTH))) {
     const mi = MONTHS.indexOf(m[1]);
     let y = m[2] ? +m[2] : today.getFullYear();
     let d = new Date(y, mi + 1, 0);
     if (d <= today) d = new Date(y + 1, mi + 1, 0);
     return Math.max(14, Math.round((d - today) / DAY));
   }
-  if (/this year|end of (the )?year/.test(t)) return Math.max(14, Math.round((new Date(today.getFullYear(), 11, 31) - today) / DAY));
+  if (THIS_YEAR.test(t)) return Math.max(14, Math.round((new Date(today.getFullYear(), 11, 31) - today) / DAY));
   return 90; // a quarter is a good default horizon for a personal goal
 }
 
@@ -70,6 +73,16 @@ export function plan(intention, { today = new Date(), why = '' } = {}) {
     purpose: why.trim() || `Because becoming this is who you already are, just not yet in practice.`,
     milestones, weekly: tpl.weekly.map((title, i) => ({ id: `w${i + 1}`, title })), habit: tpl.habit,
   };
+}
+
+// What the planner read in the words, so the app can show its reasoning next to the plan.
+// `phrase` is the time frame it found (null when it fell back to the 90-day default) and
+// `matched` lists the keywords that picked the domain. Same rules as plan(), no new logic.
+export function reading(intention, today = new Date()) {
+  const t = intention.toLowerCase();
+  const m = t.match(RELATIVE) || t.match(BY_MONTH) || t.match(THIS_YEAR);
+  const domain = detectDomain(intention), tpl = DOMAINS.find(d => d.id === domain);
+  return { days: parseHorizon(intention, today), phrase: m ? m[0] : null, domain, matched: tpl ? tpl.keys.filter(k => t.includes(k)) : [] };
 }
 
 export const iso = d => d.toISOString().slice(0, 10);
