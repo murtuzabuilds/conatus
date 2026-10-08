@@ -51,6 +51,17 @@ flowchart LR
 4. **Private by default.** Everything lives in `localStorage`. There's no account and no server.
 5. **Deterministic core, AI-ready edge.** The planner is rule-based so it's instant and testable. It returns a plain JSON shape, so an LLM planner can replace it without touching the tracker or coach.
 
+## More screens
+
+| | |
+|---|---|
+| ![Five pillars](docs/pillars.webp) | ![Milestones and this week](docs/plan.webp) |
+| Five pillars | Milestones and this week |
+
+<img src="docs/phone.webp" width="300" alt="Dashboard on a phone">
+
+Dashboard on a phone.
+
 ## Run it
 
 ```bash
