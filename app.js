@@ -1,6 +1,7 @@
 import { plan, reading, iso } from './src/planner.js';
 import { streak, consistency, pillars, weekKey } from './src/tracker.js';
 import { nudge } from './src/coach.js';
+import { draftPlan } from './src/model.js';
 
 const $ = id => document.getElementById(id);
 const KEY = 'conatus.v1';
@@ -28,9 +29,10 @@ const PILLARS = {
 };
 let pillarSel = 'growth';
 
-function start(goal, why, history = 0) {
+function start(goal, why, history = 0, chosen = null) {
   const created = new Date(Date.now() - history * 864e5);
-  const p = plan(goal, { today: created, why });
+  /* the plan the person just saw (model-written or rules), or, for the sample history, a rules plan back-dated */
+  const p = chosen && !history ? JSON.parse(JSON.stringify(chosen)) : plan(goal, { today: created, why });
   const checkins = [];
   for (let i = history; i >= 1; i--) if (i !== 4) checkins.push(iso(new Date(Date.now() - i * 864e5))); // one honest miss
   if (history) p.milestones[0].done = true;
@@ -68,18 +70,41 @@ function preview() {
   $('pvDots').innerHTML = p.milestones.map(m => `<li>${day(m.due)}</li>`).join('');
   $('pvNext').textContent = p.milestones[0].title;
   $('pvHabit').textContent = p.habit;
-  $('pvRead').textContent = `${r.short} Built by rules, in your browser.`;
+  const care = p.care ? ` ${p.careNote}` : '';
+  $('pvRead').textContent = p.source === 'model'
+    ? `Written for your words by a model (${p.model}). Conatus's rules set the ${p.days}-day calendar.${care}`
+    : `${r.short} Built by rules, in your browser.${draftNote ? ' ' + draftNote : ''}${care}`;
+  $('sendBtn').disabled = false;
 }
+/* Someone who may be going through something hard gets a pause and a pointer to support, not a plan. */
+function crisisView() {
+  $('pvLabel').textContent = 'A pause first'; $('pvDays').textContent = ''; $('pvDots').innerHTML = '';
+  $('pvNext').textContent = "It sounds like things might be heavy right now. You don't have to work through this alone. Please reach out to someone you trust, or in the US call or text 988 to talk with someone now.";
+  $('pvHabit').textContent = ''; $('pvRead').textContent = 'Conatus does not make a plan for this. A person can help more than an app here.';
+  $('sendBtn').disabled = true;
+}
+let asked = 0, draftNote = '';
 function advance() {
-  if (step === 3) return start($('goal').value, $('why').value);
-  try { draft = plan($('goal').value, { why: $('why').value }); } catch (e) { $('err').textContent = e.message; $('goal').focus(); return; }
-  if (step === 2) preview();
+  if (step === 3) { if (!draft || draft.crisis) return; return start($('goal').value, $('why').value, 0, draft); }
+  try { draft = { ...plan($('goal').value, { why: $('why').value }), source: 'rules' }; } catch (e) { $('err').textContent = e.message; $('goal').focus(); return; }
+  const toPreview = step === 2;
+  if (toPreview) { draftNote = ''; preview(); }
   showStep(step + 1);
   if (step === 2) $('why').focus({ preventScroll: true });
+  if (toPreview) {
+    /* the rules plan shows at once; a model-written plan replaces it when it arrives, or the rules plan stays and says why */
+    const n = ++asked, goal = $('goal').value, why = $('why').value;
+    $('pvRead').textContent = 'Writing your plan with a model...';
+    draftPlan(goal, { why }).then(r => {
+      if (n !== asked || step !== 3) return;
+      if (r.crisis) { draft = { crisis: true }; return crisisView(); }
+      draft = r.plan; draftNote = r.note || ''; preview();
+    });
+  }
 }
 $('form').addEventListener('submit', e => { e.preventDefault(); advance(); });
 $('go').parentElement.addEventListener('click', e => { if (step === 3 && !e.target.closest('button')) advance(); });
-$('back').addEventListener('click', () => { showStep(step - 1); (step === 1 ? $('goal') : $('why')).focus({ preventScroll: true }); });
+$('back').addEventListener('click', () => { asked++; $('sendBtn').disabled = false; showStep(step - 1); (step === 1 ? $('goal') : $('why')).focus({ preventScroll: true }); });
 $('examples').addEventListener('click', e => { if (e.target.tagName === 'BUTTON') { $('goal').value = e.target.textContent; $('goal').focus({ preventScroll: true }); } });
 const toStory = () => { $('form').scrollIntoView({ block: 'center' }); showStep(1); $('goal').focus({ preventScroll: true }); };
 ['navStart', 'startBtn', 'startBtn2'].forEach(id => $(id).addEventListener('click', toStory));
@@ -108,9 +133,14 @@ function render() {
   $('goalBarWrap').setAttribute('aria-label', `${done} of ${p.milestones.length} milestones done`);
   $('daysLeft').textContent = daysLeft;
   const r = readingOf(S.intent || p.goal, p);
-  $('readLine').textContent = `Conatus read your words as a ${p.days}-day ${p.domain} plan.`;
-  $('readMore').innerHTML = '<li></li><li></li><li></li>';
-  [r.horizon, r.domain, r.spacing].forEach((txt, i) => ($('readMore').children[i].textContent = txt));
+  $('readLine').textContent = p.source === 'model'
+    ? `A model wrote your ${p.days}-day ${p.domain} plan. Conatus's rules set the calendar and do the tracking.`
+    : `Conatus read your words as a ${p.days}-day ${p.domain} plan.`;
+  if (p.care) $('readLine').textContent += ` ${p.careNote}`;
+  const lines = [r.horizon, p.source === 'model' ? `The milestones, weekly actions and habit were written for your words by a model (${p.model}), then checked by Conatus.` : r.domain, r.spacing];
+  if (p.care) lines.unshift(p.careNote);
+  $('readMore').innerHTML = lines.map(() => '<li></li>').join('');
+  lines.forEach((txt, i) => ($('readMore').children[i].textContent = txt));
 
   // Growth card over the photo. The desk photo suits career, learning and creative plans; others get the drawn ground.
   $('photo').classList.toggle('drawn', !['career', 'learning', 'creative'].includes(p.domain));

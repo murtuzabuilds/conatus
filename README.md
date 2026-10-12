@@ -31,7 +31,8 @@ flowchart LR
     C --> T
 ```
 
-- **Planner** (`src/planner.js`) reads the time horizon ("in 8 weeks", "by May", "this year") and the domain (career, fitness, learning, creative or general), then lays out milestones evenly across the horizon.
+- **Model** (`src/model.js`): a real model (gpt-oss-120b on Groq, through the same Cloudflare Worker as Umbra and CardRight) writes the words of the plan for your intention: four milestones, three weekly actions and one daily habit. It never sets a date. A checker rejects anything of the wrong shape, health-risk goals always carry a note to involve a professional, and words that suggest someone may be in crisis get a pointer to support instead of a plan, without calling the model at all. If the model is slow or down, the rules planner below takes over and says so.
+- **Planner** (`src/planner.js`) always sets the calendar. It reads the time horizon ("in 8 weeks", "by May", "this year") and the domain (career, fitness, learning, creative or general), then lays out milestones evenly across the horizon.
 - **Tracker** (`src/tracker.js`) computes the streak, consistency and the five pillar scores, plus *pace*: are you ahead of or behind the plan's schedule?
 - **Coach** (`src/coach.js`) picks exactly one message from the state, in priority order:
 
