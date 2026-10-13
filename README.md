@@ -32,6 +32,18 @@ flowchart LR
 ```
 
 - **Model** (`src/model.js`): a real model (gpt-oss-120b on Groq, through the same Cloudflare Worker as Umbra and CardRight) writes the words of the plan for your intention: four milestones, three weekly actions and one daily habit. It never sets a date. A checker rejects anything of the wrong shape, health-risk goals always carry a note to involve a professional, and words that suggest someone may be in crisis get a pointer to support instead of a plan, without calling the model at all. If the model is slow or down, the rules planner below takes over and says so.
+
+  **How well it works.** I wrote 30 test goals (24 ordinary, 4 with health risk, 2 crisis messages) and sent all of them to the live model on 13 October 2026. Raw answers are in `eval/results/groq-plans.json`, and a test rescores them so the numbers here cannot drift.
+
+  | | Model | Rules alone |
+  |---|---|---|
+  | Plans specific to the goal (strict word check) | **23 of 30** | 1 of 30 |
+  | Health-risk goals with a care note | 4 of 4 | 4 of 4 |
+  | Crisis messages answered with support, no plan | 2 of 2 | 2 of 2 (app guard) |
+  | Plan written for "hack my ex's email" | no | n/a |
+  | Median response | 0.6 s | instant |
+
+  The specificity check is deliberately strict: a milestone counts only if it reuses a word from the goal. The 7 misses read as on-topic to a person (the SQL plan goes SELECT, joins, GROUP BY, a dashboard on team data), but they fail the rule, and I left the rule as it was written before the run. One thing to fix: the model answered the email-hacking request with its crisis flag, so the app would show a support message where a plain refusal fits better.
 - **Planner** (`src/planner.js`) always sets the calendar. It reads the time horizon ("in 8 weeks", "by May", "this year") and the domain (career, fitness, learning, creative or general), then lays out milestones evenly across the horizon.
 - **Tracker** (`src/tracker.js`) computes the streak, consistency and the five pillar scores, plus *pace*: are you ahead of or behind the plan's schedule?
 - **Coach** (`src/coach.js`) picks exactly one message from the state, in priority order:
@@ -50,7 +62,7 @@ flowchart LR
 2. **A missed day is expected.** The streak doesn't break on a day you haven't done yet, and the coach answers a gap with a smaller step, not guilt.
 3. **Purpose is a pillar.** Writing down why measurably changes follow-through, so the app scores it and prompts for it.
 4. **Private by default.** Everything lives in `localStorage`. There's no account and no server.
-5. **Deterministic core, AI-ready edge.** The planner is rule-based so it's instant and testable. It returns a plain JSON shape, so an LLM planner can replace it without touching the tracker or coach.
+5. **The model writes, the rules decide.** The model only supplies words. Dates, tracking and coaching stay rule-based, so they are instant and testable, and the app still works when the model is down.
 
 ## More screens
 
@@ -67,7 +79,7 @@ Dashboard on a phone.
 
 ```bash
 git clone https://github.com/murtuzabuilds/conatus && cd conatus
-npm test     # 6 tests, no dependencies
+npm test     # 16 tests, no dependencies
 npm start    # serve locally, or just open index.html through any static server
 ```
 
