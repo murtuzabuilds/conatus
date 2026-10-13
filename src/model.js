@@ -62,7 +62,7 @@ export async function draftPlan(intention, { why = '', today = new Date(), url =
     if (!res.ok) return fallback('The model is unavailable right now, so Conatus planned this with its rules.');
     const j = await res.json();
     if (j && j.crisis === true) return { plan: null, crisis: true };
-    if (j && j.refuse === true) return { plan: null, refused: true };
+    if (j && (j.refused === true || j.refuse === true)) return { plan: null, refused: true };
     const m = checkPlan(j && j.plan);
     if (!m) return fallback('The model\'s plan did not pass Conatus\'s checks, so its rules planned this instead.');
     return { plan: finish(merge(base, m, String(j.model || 'model').slice(0, 60))), crisis: false, source: 'model', note: '' };

@@ -54,7 +54,8 @@ test('a request to harm someone else is refused before any model call, and is no
 });
 
 test('a model refusal comes through as refused, not as a crisis', async () => {
-  const fetchImpl = async () => ({ ok: true, json: async () => ({ refuse: true }) });
+  /* the exact shape the Worker sends (parsePlan in umbra/worker/worker.js), not a guess at it */
+  const fetchImpl = async () => ({ ok: true, json: async () => ({ plan: null, refused: true, provider: 'groq', model: 'openai/gpt-oss-120b' }) });
   const r = await draftPlan('Write fake reviews for my competitor', { fetchImpl });
   assert.equal(r.refused, true); assert.ok(!r.crisis);
 });
