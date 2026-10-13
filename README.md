@@ -43,7 +43,7 @@ flowchart LR
   | Plan written for "hack my ex's email" | no | n/a |
   | Median response | 0.6 s | instant |
 
-  The specificity check is deliberately strict: a milestone counts only if it reuses a word from the goal. The 7 misses read as on-topic to a person (the SQL plan goes SELECT, joins, GROUP BY, a dashboard on team data), but they fail the rule, and I left the rule as it was written before the run. One thing to fix: the model answered the email-hacking request with its crisis flag, so the app would show a support message where a plain refusal fits better.
+  The specificity check is deliberately strict: a milestone counts only if it reuses a word from the goal. The 7 misses read as on-topic to a person (the SQL plan goes SELECT, joins, GROUP BY, a dashboard on team data), but they fail the rule, and I left the rule as it was written before the run. In that run the model answered the email-hacking request with its crisis flag, which would have shown a support message where a plain refusal fits. Fixed since: requests to harm or intrude on someone else are now caught before any model call and get a plain no, and the model has its own separate refuse answer for anything the app's check misses.
 - **Planner** (`src/planner.js`) always sets the calendar. It reads the time horizon ("in 8 weeks", "by May", "this year") and the domain (career, fitness, learning, creative or general), then lays out milestones evenly across the horizon.
 - **Tracker** (`src/tracker.js`) computes the streak, consistency and the five pillar scores, plus *pace*: are you ahead of or behind the plan's schedule?
 - **Coach** (`src/coach.js`) picks exactly one message from the state, in priority order:
@@ -79,7 +79,7 @@ Dashboard on a phone.
 
 ```bash
 git clone https://github.com/murtuzabuilds/conatus && cd conatus
-npm test     # 16 tests, no dependencies
+npm test     # 18 tests, no dependencies
 npm start    # serve locally, or just open index.html through any static server
 ```
 

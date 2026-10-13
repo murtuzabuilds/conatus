@@ -13,10 +13,14 @@ export const DOMAINS = ['career', 'fitness', 'learning', 'creative', 'general'];
 const CRISIS = /\b(kill myself|end (it all|my life)|suicid|self[- ]?harm|hurt myself|don'?t want to (live|be here|exist)|disappear forever|no reason to live)\b/i;
 /** Goals with health risk: the plan stays gentle and always carries a note to involve a professional, whatever the model says. */
 const RISKY = /\b(lose \d+\s?(lbs?|pounds?|kg|kilos?)|crash diet|stop eating|starv|fasting|fast for \d+|extreme|steroid|medication|meds\b|injur|rehab|eating disorder)\b/i;
+/** Requests to harm or intrude on someone else: no plan and a plain refusal (not the crisis message). Checked before any model call. */
+const HARM = /\b(hack(ing)? (into|someone|somebody|my ex|his|her|their)|break(ing)? into (someone|somebody|my ex|his|her|their)|stalk(ing)?|spy(ing)? on|steal(ing)? (from|someone|somebody|his|her|their)|get(ting)? revenge|revenge on|blackmail|harass(ing)?|poison(ing)? (someone|somebody|him|her|them)|hurt (someone|somebody|him|her|them|my (ex|boss|wife|husband|partner|brother|sister|mom|dad)))\b/i;
+export const REFUSE_NOTE = 'Conatus helps you grow into who you want to be. It will not plan something that could harm or intrude on someone else. Try a goal about your own growth.';
 export const CARE_NOTE = 'Goals that touch your health are best shaped with a doctor or qualified professional. Keep every step gentle.';
 
 export const isCrisis = t => CRISIS.test(String(t || ''));
 export const isRisky = t => RISKY.test(String(t || ''));
+export const isHarm = t => HARM.test(String(t || ''));
 
 const line = (v, max = 80) => typeof v === 'string' && v.trim().length >= 3 && v.trim().length <= max && !/https?:|<|>/.test(v) ? v.trim().replace(/\s+/g, ' ') : null;
 /** The model's plan, checked again here: exactly 4 milestones, 3 weekly actions, 1 habit, short plain lines. Anything else gives null. */
@@ -41,10 +45,11 @@ export function merge(base, m, model) {
 
 /**
  * A plan for one intention. Returns { plan, crisis, source, note }.
- * crisis: true means no plan is offered, only support. source is 'model' or 'rules'.
+ * crisis: true means no plan is offered, only support. refused: true means the request would harm someone else, so no plan. source is 'model' or 'rules'.
  */
 export async function draftPlan(intention, { why = '', today = new Date(), url = MODEL_URL, fetchImpl = globalThis.fetch, timeoutMs = 9000 } = {}) {
   if (isCrisis(intention) || isCrisis(why)) return { plan: null, crisis: true };
+  if (isHarm(intention) || isHarm(why)) return { plan: null, refused: true };
   const base = { ...plan(intention, { today, why }), source: 'rules' };
   const risky = isRisky(intention) || isRisky(why);
   const finish = p => (risky ? { ...p, care: true, careNote: p.careNote || CARE_NOTE } : p);
@@ -57,6 +62,7 @@ export async function draftPlan(intention, { why = '', today = new Date(), url =
     if (!res.ok) return fallback('The model is unavailable right now, so Conatus planned this with its rules.');
     const j = await res.json();
     if (j && j.crisis === true) return { plan: null, crisis: true };
+    if (j && j.refuse === true) return { plan: null, refused: true };
     const m = checkPlan(j && j.plan);
     if (!m) return fallback('The model\'s plan did not pass Conatus\'s checks, so its rules planned this instead.');
     return { plan: finish(merge(base, m, String(j.model || 'model').slice(0, 60))), crisis: false, source: 'model', note: '' };

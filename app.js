@@ -1,7 +1,7 @@
 import { plan, reading, iso } from './src/planner.js';
 import { streak, consistency, pillars, weekKey } from './src/tracker.js';
 import { nudge } from './src/coach.js';
-import { draftPlan } from './src/model.js';
+import { draftPlan, REFUSE_NOTE } from './src/model.js';
 
 const $ = id => document.getElementById(id);
 const KEY = 'conatus.v1';
@@ -83,9 +83,16 @@ function crisisView() {
   $('pvHabit').textContent = ''; $('pvRead').textContent = 'Conatus does not make a plan for this. A person can help more than an app here.';
   $('sendBtn').disabled = true;
 }
+/* A request to harm or intrude on someone else gets a plain no, not the crisis message. */
+function refusedView() {
+  $('pvLabel').textContent = 'Not this one'; $('pvDays').textContent = ''; $('pvDots').innerHTML = '';
+  $('pvNext').textContent = REFUSE_NOTE;
+  $('pvHabit').textContent = ''; $('pvRead').textContent = 'Conatus does not make a plan for this.';
+  $('sendBtn').disabled = true;
+}
 let asked = 0, draftNote = '';
 function advance() {
-  if (step === 3) { if (!draft || draft.crisis) return; return start($('goal').value, $('why').value, 0, draft); }
+  if (step === 3) { if (!draft || draft.crisis || draft.refused) return; return start($('goal').value, $('why').value, 0, draft); }
   try { draft = { ...plan($('goal').value, { why: $('why').value }), source: 'rules' }; } catch (e) { $('err').textContent = e.message; $('goal').focus(); return; }
   const toPreview = step === 2;
   if (toPreview) { draftNote = ''; preview(); }
@@ -98,6 +105,7 @@ function advance() {
     draftPlan(goal, { why }).then(r => {
       if (n !== asked || step !== 3) return;
       if (r.crisis) { draft = { crisis: true }; return crisisView(); }
+      if (r.refused) { draft = { refused: true }; return refusedView(); }
       draft = r.plan; draftNote = r.note || ''; preview();
     });
   }
