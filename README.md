@@ -2,11 +2,11 @@
 
 **An AI personal growth companion.** Tell it who you want to become. It turns that intention into a chain: a purpose, four dated milestones, three weekly actions and one daily keystone habit. Then it tracks the chain and coaches the next step.
 
-**[Try it live →](https://murtuzabuilds.github.io/conatus/)** &nbsp;·&nbsp; [Brand identity case study](https://murtuzabuilds.com/#portfolio)
+**[Try it live →](https://murtuzabuilds.com/conatus/)** &nbsp;·&nbsp; [Case study](https://murtuzabuilds.com/#work)
 
 ![Conatus dashboard](docs/dashboard.png)
 
-*Conatus* is Spinoza's word for the drive of every being to persist and grow. I first designed Conatus as a brand identity. This repo is the product behind the brand: the same five pillars, working.
+*Conatus* is Spinoza's word for the drive of every being to persist and grow. I defined the product, built the working app and designed its identity.
 
 ## The five pillars
 
@@ -87,7 +87,7 @@ On the first screen, "See it with 12 days of history" loads a realistic demo, in
 
 ## Brand
 
-The app uses the Conatus identity from the brand case study: **Vivid Orange** `#F44E14`, **Charcoal Black** `#171717`, **Warm Off-White** `#FAFAF8`, **Light Grey** `#C7C7C7` and **Medium Grey** `#707070`, set in **Sora**. The logomark is rebuilt as an SVG from its construction grid: a C formed by two arcs around a central diamond, with the forward bar and two diamonds reaching left, momentum out of a steady core. The first screen cycles the campaign lines: *Keep moving. Keep becoming.* · *Every choice. A stronger you.* · *Quiet mind. Clear direction.*
+The app uses the Conatus identity system: **Vivid Orange** `#F44E14`, **Charcoal Black** `#171717`, **Warm Off-White** `#FAFAF8`, **Light Grey** `#C7C7C7` and **Medium Grey** `#707070`, set in **Sora**. The logomark is rebuilt as an SVG from its construction grid: a C formed by two arcs around a central diamond, with the forward bar and two diamonds reaching left, momentum out of a steady core. The first screen cycles the campaign lines: *Keep moving. Keep becoming.* · *Every choice. A stronger you.* · *Quiet mind. Clear direction.*
 
 ![Conatus onboarding](docs/onboarding.png)
 
